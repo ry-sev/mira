@@ -110,3 +110,28 @@ Logs go to a file, never stdout, because the TUI owns the terminal.
 - Include examples in doc comments for complex functions
 - Use `//!` for module-level documentation
 - Keep comments concise and up-to-date
+
+## Contributing
+
+### Branches
+
+Always create a branch before starting a new feature or fix. Never commit directly to
+`main`. Each branch MUST cover one feature or fix only. A small, focused pull request is
+reviewed much faster than a large one that mixes unrelated changes.
+
+Branch names MUST start with a prefix that says what the branch does:
+
+| Prefix      | Use for                                     |
+| ----------- | ------------------------------------------- |
+| `feature/`  | New functionality                           |
+| `bugfix/`   | Fixes for non-urgent bugs                   |
+| `hotfix/`   | Urgent fixes for released code              |
+| `refactor/` | Code restructuring with no behavior change  |
+| `docs/`     | Documentation only                          |
+| `chore/`    | Tooling, dependencies, CI, and other upkeep |
+
+Example: `feature/websocket-inspection`, `bugfix/tls-handshake-timeout`.
+
+### Merging
+
+Squash commits before merging. Each pull request MUST land on `main` as a single commit.
