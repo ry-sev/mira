@@ -1,0 +1,27 @@
+## File system
+.DS_Store
+desktop.ini
+
+## Editor
+.helix/
+.zed/
+
+## Claude Code
+.claude/
+
+## Build
+/debug
+/target
+
+## Temporary files
+*~
+\#*
+\#*\#
+.#*
+
+## Node
+node_modules
+
+## direnv
+/.envrc
+/.direnv

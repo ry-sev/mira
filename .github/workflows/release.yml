@@ -1,0 +1,222 @@
+name: Release
+
+# Builds the desktop app's installers - a DMG for macOS, an NSIS installer for Windows, an
+# AppImage for Linux - and attaches them, with their SHA-256 checksums, to a draft release
+# for the pushed tag. Nothing is public until someone publishes the draft by hand.
+#
+# None of them is signed by a certificate authority; docs/releasing.md says what that
+# costs and what the checksums are for. The macOS build is ad-hoc signed, which costs
+# nothing and keeps macOS from calling the app damaged.
+#
+# Run it from the Actions tab instead and it builds the same way, but keeps the installers
+# and the checksums as one workflow artifact rather than making a release.
+#
+# Third-party actions are pinned to commits rather than tags, because a tag can be moved
+# to code that tampers with what is built.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check the version
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      # cargo-packager takes the version from the crate, so a tag that disagrees would ship
+      # installers named for a version they are not. Checked first, before the builds
+      # rather than after them.
+      - name: Check the tag matches the crate version
+        run: |
+          version=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r '.packages[] | select(.name == "mira-app") | .version')
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match the crate version $version"
+            exit 1
+          fi
+
+  build:
+    name: Build (${{ matrix.name }})
+    needs: check
+    # Runs on a manual dispatch, when `check` is skipped, but not after it fails.
+    if: ${{ !cancelled() && !failure() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            runner: macos-latest
+            # One DMG for Apple Silicon and Intel alike: the runner's own arm64 binary,
+            # and an Intel one glued to it by `lipo` before packaging.
+            rust-targets: x86_64-apple-darwin
+            args: --target universal-apple-darwin
+            bundle: target/packages/*.dmg
+          - name: Windows
+            runner: windows-latest
+            rust-targets: ""
+            args: ""
+            bundle: target/packages/*-setup.exe
+          # An AppImage runs on systems at least as new as the glibc it was built against.
+          - name: Linux
+            runner: ubuntu-22.04
+            rust-targets: ""
+            args: --formats appimage
+            bundle: target/packages/*.AppImage
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master, 2026-10-09
+        with:
+          toolchain: stable
+          targets: ${{ matrix.rust-targets }}
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: release
+
+      # Pinned, like the actions: it is what writes the installers.
+      - name: Install cargo-packager
+        run: cargo install cargo-packager --version 0.11.8 --locked
+
+      # GPUI's Linux backends, and FUSE for the AppImage tooling, which is itself an
+      # AppImage.
+      - name: Install GPUI's libraries and the AppImage tooling
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfontconfig-dev libwayland-dev libxkbcommon-x11-dev \
+            libx11-xcb-dev libzstd-dev libvulkan1 libfuse2
+
+      # cargo-packager looks for a universal binary where a universal target would have
+      # put one, and Cargo has no such target, so it is assembled there by hand.
+      - name: Build the universal binary (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cargo build --release --locked -p mira-app
+          cargo build --release --locked -p mira-app --target x86_64-apple-darwin
+          mkdir -p target/universal-apple-darwin/release
+          lipo -create -output target/universal-apple-darwin/release/mira \
+            target/release/mira target/x86_64-apple-darwin/release/mira
+
+      # Builds the host binary first, which on macOS the step above has already done.
+      - name: Package
+        working-directory: mira-app
+        shell: bash
+        env:
+          ARGS: ${{ matrix.args }}
+        run: |
+          # Unquoted: either nothing, or a flag and its value.
+          # shellcheck disable=SC2086
+          cargo packager --release $ARGS
+
+      # cargo-packager names the AppImage after the binary, `mira`, and the other two
+      # installers after the product, `Mira`. Renamed so all three match.
+      - name: Name the AppImage after the product (Linux)
+        if: runner.os == 'Linux'
+        working-directory: target/packages
+        run: |
+          for image in mira_*.AppImage; do
+            mv -- "$image" "Mira_${image#mira_}"
+          done
+
+      # An ad-hoc signature has to cover the whole bundle. A Mac that finds one missing or
+      # broken on a downloaded app calls it damaged, with no button to open it anyway.
+      - name: Verify (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          app="$GITHUB_WORKSPACE/target/packages/Mira.app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign --display --verbose=2 "$app" 2>&1 | grep -q "Signature=adhoc" \
+            || { echo "::error::Mira.app is not ad-hoc signed"; exit 1; }
+          archs=$(lipo -archs "$app/Contents/MacOS/mira")
+          for arch in arm64 x86_64; do
+            [[ " $archs " == *" $arch "* ]] \
+              || { echo "::error::Mira.app has no $arch slice (has: $archs)"; exit 1; }
+          done
+
+      - name: Keep the installer
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mira-${{ matrix.name }}
+          path: ${{ matrix.bundle }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: mira-*
+          path: dist
+          merge-multiple: true
+
+      # One list covering all three, so a download can be checked against a copy posted
+      # somewhere other than beside the downloads.
+      - name: Checksum the installers
+        working-directory: dist
+        run: |
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+          {
+            echo "### SHA-256 checksums"
+            echo
+            echo "These installers are not signed. Check a download against these before"
+            echo "running it; docs/installing.md says how."
+            echo
+            echo '```'
+            cat SHA256SUMS
+            echo '```'
+          } > "$RUNNER_TEMP/notes.md"
+
+      - name: Keep the run's installers
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mira-installers
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Draft the release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A re-run replaces the draft an earlier attempt made, so the notes always list
+          # the checksums of the files actually attached. A published release is left
+          # alone.
+          if draft=$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft 2> /dev/null); then
+            if [ "$draft" != "true" ]; then
+              echo "::error::release $GITHUB_REF_NAME is already published; not replacing it"
+              exit 1
+            fi
+            gh release delete "$GITHUB_REF_NAME" --yes
+          fi
+          gh release create "$GITHUB_REF_NAME" dist/* --draft --verify-tag \
+            --title "Mira $GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" --generate-notes

@@ -1,0 +1,34 @@
+[package]
+name = "mira-cli"
+description.workspace = true
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "mira-cli"
+path = "src/main.rs"
+
+[dependencies]
+mira-proxy.workspace = true
+anyhow.workspace = true
+bytes.workspace = true
+chrono.workspace = true
+clap.workspace = true
+crossterm.workspace = true
+parking_lot.workspace = true
+ratatui.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+dirs.workspace = true
+url.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

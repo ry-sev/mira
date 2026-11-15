@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Windows and Linux, 48px and below: the star alone, bigger and bolder, without the
+       field, halo and companion that would smear into noise. -->
+  <defs>
+    <radialGradient id="ground" cx="0.5" cy="0.5" r="0.72">
+      <stop offset="0" stop-color="#4a0e22"/>
+      <stop offset="0.5" stop-color="#1e070f"/>
+      <stop offset="1" stop-color="#0a0407"/>
+    </radialGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#ff3a66" stop-opacity="0.95"/>
+      <stop offset="0.25" stop-color="#ec2655" stop-opacity="0.6"/>
+      <stop offset="0.5" stop-color="#cc1a45" stop-opacity="0.28"/>
+      <stop offset="0.75" stop-color="#a01438" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#7a0c2a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="0.4" stop-color="#fff3f7"/>
+      <stop offset="0.65" stop-color="#ffb3cb" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#ff7aa3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffc4d8" stop-opacity="0.45"/>
+      <stop offset="0.5" stop-color="#fff"/>
+      <stop offset="1" stop-color="#ffc4d8" stop-opacity="0.45"/>
+    </linearGradient>
+    <path id="spike" d="M 512 24 L 566 512 L 512 1000 L 458 512 Z" fill="url(#ray)"/>
+    <clipPath id="body">
+      <rect x="0" y="0" width="1024" height="1024" rx="200"/>
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="200" fill="url(#ground)"/>
+  <g clip-path="url(#body)">
+    <circle cx="512" cy="512" r="560" fill="url(#glow)"/>
+    <use xlink:href="#spike"/>
+    <use xlink:href="#spike" transform="rotate(90 512 512)"/>
+    <circle cx="512" cy="512" r="300" fill="url(#core)"/>
+  </g>
+  <!-- A faint rim, so the tile does not sink into a dark taskbar. -->
+  <rect x="3" y="3" width="1018" height="1018" rx="197" fill="none" stroke="#fff" stroke-opacity="0.11" stroke-width="6"/>
+</svg>

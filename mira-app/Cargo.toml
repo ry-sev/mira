@@ -1,0 +1,66 @@
+[package]
+name = "mira-app"
+description = "Desktop window for inspecting traffic captured by the Mira proxy."
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "mira"
+path = "src/main.rs"
+
+[dependencies]
+mira-proxy.workspace = true
+bytes.workspace = true
+chrono.workspace = true
+dirs.workspace = true
+gpui-kit.workspace = true
+parking_lot.workspace = true
+serde_json.workspace = true
+smol.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+url.workspace = true
+
+[lints]
+workspace = true
+
+# Installers, built by `cargo packager --release` from this directory; see docs/releasing.md.
+# The defaults choose the formats: an app and a DMG on macOS, an NSIS installer on Windows,
+# and a .deb and an AppImage on Linux, of which the release ships the AppImage.
+[package.metadata.packager]
+product-name = "Mira"
+identifier = "dev.severino.mira"
+publisher = "Ricky Severino"
+copyright = "Copyright (c) 2026 Ricky Severino"
+category = "DeveloperTool"
+description = "An HTTP and HTTPS debugging proxy"
+long-description = "Runs an intercepting proxy and shows every request and response that passes through it as it happens: headers, bodies, timing, and failures, with search across all of it and export to HAR."
+homepage = "https://github.com/ry-sev/mira"
+before-packaging-command = "cargo build --release -p mira-app"
+out-dir = "../target/packages"
+binaries = [{ path = "mira", main = true }]
+icons = [
+    "icons/32x32.png",
+    "icons/128x128.png",
+    "icons/128x128@2x.png",
+    "icons/icon.icns",
+    "icons/icon.ico",
+]
+
+[package.metadata.packager.macos]
+minimum-system-version = "10.15"
+# Ad hoc: free, and changes nothing about Gatekeeper's first-run warning. What it prevents
+# is worse: a Mac finding an unsigned app in a download calls it damaged, with no button
+# to open it anyway.
+signing-identity = "-"
+
+[package.metadata.packager.nsis]
+# Per user, so installing needs no administrator rights.
+installer-mode = "currentUser"

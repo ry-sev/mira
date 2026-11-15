@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Windows and Linux, 64px and up: full-bleed, so the star is not shrunk by a margin. -->
+  <defs>
+    <!-- Deep space, warmed toward the middle by the star's light. -->
+    <radialGradient id="ground" cx="0.5" cy="0.5" r="0.72">
+      <stop offset="0" stop-color="#3e0c1c"/>
+      <stop offset="0.125" stop-color="#320a17"/>
+      <stop offset="0.25" stop-color="#270813"/>
+      <stop offset="0.375" stop-color="#1e070f"/>
+      <stop offset="0.5" stop-color="#17060c"/>
+      <stop offset="0.625" stop-color="#11050a"/>
+      <stop offset="0.75" stop-color="#0d0408"/>
+      <stop offset="0.875" stop-color="#0b0407"/>
+      <stop offset="1" stop-color="#0a0407"/>
+    </radialGradient>
+    <!-- The red giant's light, scattered wide. -->
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#ff3a66" stop-opacity="0.85"/>
+      <stop offset="0.15" stop-color="#f42c5a" stop-opacity="0.6"/>
+      <stop offset="0.3" stop-color="#e3214e" stop-opacity="0.38"/>
+      <stop offset="0.45" stop-color="#cc1a45" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#b0153c" stop-opacity="0.12"/>
+      <stop offset="0.75" stop-color="#961133" stop-opacity="0.05"/>
+      <stop offset="0.9" stop-color="#800e2c" stop-opacity="0.015"/>
+      <stop offset="1" stop-color="#7a0c2a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- The star itself: white-hot, cooling to rose. -->
+    <radialGradient id="core">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="0.28" stop-color="#fff3f7"/>
+      <stop offset="0.55" stop-color="#ffb3cb" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#ff7aa3" stop-opacity="0"/>
+    </radialGradient>
+    <!-- A diffraction spike, brightest where it leaves the star. -->
+    <linearGradient id="ray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffc4d8" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#fff"/>
+      <stop offset="1" stop-color="#ffc4d8" stop-opacity="0"/>
+    </linearGradient>
+    <path id="spike" d="M 512 136 L 521 512 L 512 888 L 503 512 Z" fill="url(#ray)"/>
+    <!-- A small star, with spikes of its own. -->
+    <g id="twinkle">
+      <path d="M 0 -26 L 2.5 0 L 0 26 L -2.5 0 Z M -26 0 L 0 -2.5 L 26 0 L 0 2.5 Z" fill="#fff" fill-opacity="0.7"/>
+      <circle r="7" fill="#fff"/>
+    </g>
+    <!-- Fine grain, without which the dark gradient shows as bands in eight bits. -->
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0"/>
+    </filter>
+    <clipPath id="body">
+      <rect x="0" y="0" width="1024" height="1024" rx="230"/>
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="230" fill="url(#ground)"/>
+  <g clip-path="url(#body)">
+    <rect x="0" y="0" width="1024" height="1024" filter="url(#grain)" opacity="0.06"/>
+    <!-- The macOS plate's scene, grown to fill the tile. -->
+    <g transform="translate(512 512) scale(1.2) translate(-512 -512)">
+      <!-- The field: distant stars, a few warm, a few blue. -->
+      <g fill="#fff">
+        <circle cx="196" cy="236" r="4"/>
+        <circle cx="318" cy="168" r="3" fill="#ffe2c4"/>
+        <circle cx="270" cy="372" r="3.5" fill="#d2e0ff"/>
+        <circle cx="166" cy="560" r="3"/>
+        <circle cx="232" cy="742" r="4" fill="#ffe2c4"/>
+        <circle cx="356" cy="852" r="3"/>
+        <circle cx="604" cy="874" r="3.5" fill="#d2e0ff"/>
+        <circle cx="770" cy="808" r="3"/>
+        <circle cx="862" cy="626" r="4" fill="#ffe2c4"/>
+        <circle cx="846" cy="388" r="3"/>
+        <circle cx="704" cy="182" r="3.5"/>
+        <circle cx="610" cy="252" r="2.5" fill="#d2e0ff"/>
+        <circle cx="412" cy="704" r="2.5"/>
+        <circle cx="702" cy="660" r="2.5" fill="#ffe2c4"/>
+      </g>
+      <use xlink:href="#twinkle" transform="translate(802 226)"/>
+      <use xlink:href="#twinkle" transform="translate(222 832) scale(0.85)"/>
+      <use xlink:href="#twinkle" transform="translate(174 418) scale(0.7)"/>
+      <circle cx="512" cy="512" r="520" fill="url(#glow)"/>
+      <!-- The halo the photograph's optics draw around a star this bright. -->
+      <circle cx="512" cy="512" r="196" fill="#ff9cc0" fill-opacity="0.07" stroke="#ffb8d2" stroke-opacity="0.38" stroke-width="5"/>
+      <use xlink:href="#spike"/>
+      <use xlink:href="#spike" transform="rotate(90 512 512)"/>
+      <circle cx="512" cy="512" r="150" fill="url(#core)"/>
+      <!-- Mira B, the companion, just off the giant's glare. -->
+      <use xlink:href="#twinkle" transform="translate(406 494) scale(0.9)"/>
+    </g>
+  </g>
+  <!-- A faint rim, so the tile does not sink into a dark dock or taskbar. -->
+  <rect x="3" y="3" width="1018" height="1018" rx="227" fill="none" stroke="#fff" stroke-opacity="0.11" stroke-width="6"/>
+</svg>

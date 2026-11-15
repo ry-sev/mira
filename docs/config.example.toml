@@ -1,0 +1,133 @@
+# Mira Proxy Configuration
+#
+# This is an example configuration file for Mira. The desktop app (mira)
+# and the terminal UI (mira-cli) both read it; the app's Settings page edits it.
+# Copy this file to one of these locations:
+#   - ~/.config/mira/config.toml (XDG standard, recommended)
+#   - ~/.mira/config.toml (fallback)
+#
+# Or specify a custom path with: mira-cli --config /path/to/config.toml
+#
+# All options can be overridden via CLI arguments.
+# To see the effective configuration: mira-cli --dump-config
+#
+# Logging is not configured here: the level comes from RUST_LOG
+# (e.g. RUST_LOG=debug mira) and output goes to the log file.
+
+# =============================================================================
+# Network Settings
+# =============================================================================
+
+# Address to bind to (default: 127.0.0.1)
+bind = "127.0.0.1"
+
+# Port to listen on (default: 8888)
+port = 8888
+
+# Allow connections from external (public) IP addresses (default: false)
+# WARNING: Only enable this if you understand the security implications
+allow_external = false
+
+# =============================================================================
+# Timeouts (in seconds)
+# =============================================================================
+
+# Timeout for connecting to upstream servers (default: 30)
+connect_timeout = 30
+
+# Timeout for reading from upstream servers (default: 60)
+read_timeout = 60
+
+# Timeout for writing to upstream servers (default: 60)
+write_timeout = 60
+
+# =============================================================================
+# Limits
+# =============================================================================
+
+# Maximum body size, in megabytes (default: 500). Larger request bodies are
+# rejected. Larger response bodies still reach the client in full, but only
+# this much of them is captured.
+max_body_size_mb = 500
+
+# Maximum size of a request or response header block, in kilobytes
+# (default: 64). Headers that grow past this without terminating are
+# rejected with 431 rather than buffered.
+max_header_size_kb = 64
+
+# Maximum number of client connections served at once (default: 1024).
+# Once this many are in flight the proxy stops accepting, so further
+# connections wait in the kernel accept queue instead of piling up as
+# tasks.
+max_connections = 1024
+
+# =============================================================================
+# Capture limits
+# =============================================================================
+# Bounds on what the capture session keeps in memory. Once a limit is hit
+# the oldest exchanges are dropped, so a proxy left running for days stays
+# within a predictable footprint. Raise these if you would rather spend the
+# memory than lose the oldest traffic.
+
+[capture]
+# Maximum number of exchanges retained, and rows the TUI keeps (default: 10000)
+max_exchanges = 10000
+
+# Maximum size of a single retained body, in kilobytes. Unset by
+# default: bodies are kept whole, so a HAR export holds what the server
+# actually sent. Setting this trades that fidelity for holding more
+# exchanges in the same memory — bodies past the limit are cut, and the
+# exchange is marked as truncated.
+# max_body_kb = 2048
+
+# Maximum total retained body bytes, in megabytes (default: 128)
+max_total_body_mb = 128
+
+# =============================================================================
+# HTTPS Interception
+# =============================================================================
+
+[https]
+# Enable HTTPS interception (default: false)
+# When enabled, mira performs TLS termination to inspect HTTPS traffic.
+# Requires trusting the mira CA certificate on your system.
+intercept = false
+
+# Directory to store CA certificate and key (default: ~/.mira)
+# ca_dir = "~/.mira"
+
+# Hosts to pass through without interception
+# Useful for hosts with certificate pinning (e.g., banking apps, OS updates)
+# Supports wildcards: *.example.com matches any subdomain, but not the
+# apex example.com — list both patterns to cover both
+passthrough_hosts = [
+    # Apple services (certificate pinning)
+    # "*.apple.com",
+    # "*.icloud.com",
+
+    # Google services
+    # "*.google.com",
+    # "*.googleapis.com",
+]
+
+# =============================================================================
+# Host Filtering
+# =============================================================================
+
+# Uncomment to enable host filtering
+# [host_filter]
+#
+# # Only capture traffic from these hosts (empty = all hosts)
+# # Supports wildcards: *.example.com (subdomains only, not the apex),
+# # example.* (any TLD)
+# include = [
+#     "*.example.com",
+#     "api.myapp.local",
+# ]
+#
+# # Exclude these hosts even if they match include patterns
+# # Useful for filtering out noisy endpoints
+# exclude = [
+#     "telemetry.example.com",
+#     "analytics.example.com",
+# ]
