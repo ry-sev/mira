@@ -23,10 +23,10 @@ The CA is generated once and reused afterwards. The desktop app (`mira`) generat
 
 It is written to `~/.mira`, or to the directory set as **CA directory** in the desktop app's Settings, `ca_dir` in the config file, or `--ca-dir` for the terminal UI:
 
-| File          | Contents                                              |
-| ------------- | ----------------------------------------------------- |
-| `ca-cert.pem` | The certificate only — this is the file you install   |
-| `ca-key.pem`  | The private key                                       |
+| File          | Contents                                               |
+| ------------- | ------------------------------------------------------ |
+| `ca-cert.pem` | The certificate only — this is the file you install    |
+| `ca-key.pem`  | The private key                                        |
 | `ca.pem`      | Key and certificate combined, for tools that want both |
 
 `ca-cert.pem` is ready to use immediately - no download needed. Use this path directly in the installation commands below. In the desktop app, **Settings › CA certificate** shows the path, with buttons to copy it and to reveal the file. The terminal UI prints trust instructions on startup when interception is on.

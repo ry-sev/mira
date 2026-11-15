@@ -50,10 +50,10 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 1. Open the DMG and drag **Mira** onto **Applications**.
 2. Open Mira from Applications. macOS refuses, saying it could not verify the app; the
-   exact wording depends on the macOS version. Click **Done** or **OK**, not *Move to
-   Trash*.
+   exact wording depends on the macOS version. Click **Done** or **OK**, not _Move to
+   Trash_.
 3. Open **System Settings → Privacy & Security**, scroll down to **Security**, and next to
-   *"Mira" was blocked to protect your Mac* click **Open Anyway**. Confirm with your
+   _"Mira" was blocked to protect your Mac_ click **Open Anyway**. Confirm with your
    password or Touch ID.
 4. Open Mira again, and click **Open** when asked.
 
@@ -71,7 +71,7 @@ You will need to do this again after installing each new version.
 ### Windows
 
 1. Run `Mira_X.Y.Z_x64-setup.exe`.
-2. Windows shows *Windows protected your PC*. Click **More info**, then **Run anyway**.
+2. Windows shows _Windows protected your PC_. Click **More info**, then **Run anyway**.
 3. Follow the installer. It installs for your account only and needs no administrator
    rights.
 4. Open **Mira** from the Start menu. It does not warn again.

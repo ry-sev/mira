@@ -2,6 +2,16 @@
 
 A general-purpose HTTP/HTTPS proxy for inspecting, debugging, and monitoring web traffic.
 
+![Screenshot](docs/screenshot.png)
+
+## Documentation
+
+- [Proxy Architecture](docs/proxy-architecture.md) - internals, request flows, and module layout
+- [Certificate Installation](docs/certificate-installation.md) - trusting the CA on each platform
+- [Installing Mira](docs/installing.md) - the desktop app's installers, and their first-run warnings
+- [Releasing](docs/releasing.md) - building the installers and publishing a release
+- [Example Configuration](docs/config.example.toml) - annotated config file
+
 ## Features
 
 - **HTTP/1.1 Proxy** - Forward proxy for plain HTTP traffic
@@ -66,24 +76,24 @@ mira-cli --allow-external
 
 ### Command-Line Options
 
-| Option                     | Description                                                       |
-| -------------------------- | ----------------------------------------------------------------- |
-| `-b, --bind <IP>`          | Address to bind to (default: `127.0.0.1`)                         |
-| `-p, --port <PORT>`        | Port to listen on (default: `8888`)                               |
-| `-i, --intercept`          | Enable HTTPS interception (requires trusting the CA certificate)  |
-| `--ca-dir <DIR>`           | Directory holding the CA certificate and key (default: `~/.mira`) |
-| `--passthrough <HOST>`     | Host to tunnel without interception (repeatable, wildcards OK)    |
-| `--allow-external`         | Accept connections from public IP addresses                       |
-| `--har [FILE]`             | Export captured traffic on exit (default: `<timestamp>.har`)      |
-| `--load <FILE>`            | Load a HAR file into the session at startup                       |
-| `-c, --config <FILE>`      | Path to a TOML config file                                        |
-| `--no-config`              | Skip config file loading entirely                                 |
-| `--dump-config`            | Print the effective configuration as TOML and exit                |
-| `--connect-timeout <SECS>` | Upstream connect timeout (default: `30`)                          |
-| `--read-timeout <SECS>`    | Upstream read timeout (default: `60`)                             |
-| `--write-timeout <SECS>`   | Timeout for each write to an upstream or a client (default: `60`) |
+| Option                     | Description                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `-b, --bind <IP>`          | Address to bind to (default: `127.0.0.1`)                                                             |
+| `-p, --port <PORT>`        | Port to listen on (default: `8888`)                                                                   |
+| `-i, --intercept`          | Enable HTTPS interception (requires trusting the CA certificate)                                      |
+| `--ca-dir <DIR>`           | Directory holding the CA certificate and key (default: `~/.mira`)                                     |
+| `--passthrough <HOST>`     | Host to tunnel without interception (repeatable, wildcards OK)                                        |
+| `--allow-external`         | Accept connections from public IP addresses                                                           |
+| `--har [FILE]`             | Export captured traffic on exit (default: `<timestamp>.har`)                                          |
+| `--load <FILE>`            | Load a HAR file into the session at startup                                                           |
+| `-c, --config <FILE>`      | Path to a TOML config file                                                                            |
+| `--no-config`              | Skip config file loading entirely                                                                     |
+| `--dump-config`            | Print the effective configuration as TOML and exit                                                    |
+| `--connect-timeout <SECS>` | Upstream connect timeout (default: `30`)                                                              |
+| `--read-timeout <SECS>`    | Upstream read timeout (default: `60`)                                                                 |
+| `--write-timeout <SECS>`   | Timeout for each write to an upstream or a client (default: `60`)                                     |
 | `--max-body-size <MB>`     | Larger requests are rejected; larger responses are relayed but captured only in part (default: `500`) |
-| `--max-header-size <KB>`   | Maximum request/response header block size (default: `64`)        |
+| `--max-header-size <KB>`   | Maximum request/response header block size (default: `64`)                                            |
 
 ### HAR Export and Import
 
@@ -176,11 +186,11 @@ wget -e use_proxy=yes -e http_proxy=127.0.0.1:8888 http://example.com
 The TUI owns the terminal, so logs are written to a daily-rolled file rather
 than stdout. Each day gets its own file, named `mira-cli.log.YYYY-MM-DD`:
 
-| Platform | Directory                                    |
-| -------- | -------------------------------------------- |
+| Platform | Directory                                        |
+| -------- | ------------------------------------------------ |
 | Linux    | `$XDG_STATE_HOME/mira/` (`~/.local/state/mira/`) |
-| macOS    | `~/Library/Logs/mira/`                       |
-| Windows  | `%LOCALAPPDATA%\mira\logs\`                  |
+| macOS    | `~/Library/Logs/mira/`                           |
+| Windows  | `%LOCALAPPDATA%\mira\logs\`                      |
 
 The level defaults to `info` for the Mira crates and `warn` for everything
 else. Setting `RUST_LOG` replaces those defaults entirely:
@@ -244,19 +254,19 @@ Pausing recording leaves new traffic out of the window and the HAR export
 while the proxy keeps forwarding it. Hover over a control to see what it does
 in the status bar.
 
-| Key           | Action                                              |
-| ------------- | --------------------------------------------------- |
-| `⌘1`-`⌘3`     | Overview, Network, Hosts                            |
-| `⌘K`          | Search                                              |
-| `⌘,`          | Settings                                            |
-| `⌘F`          | Filter requests in Network                          |
-| `⌘I`          | Show or hide the inspector                          |
-| `↑` / `↓`     | Move through requests in Network                    |
-| `Enter`       | Open the selected request's response body           |
-| `Esc`         | Leave a body for Network, or clear the selection    |
-| `⌘O` / `⌘S`   | Open a HAR file / export the capture as HAR         |
-| `⌘R`          | Pause or resume recording                           |
-| `⌘⌫`          | Clear the capture                                   |
+| Key         | Action                                           |
+| ----------- | ------------------------------------------------ |
+| `⌘1`-`⌘3`   | Overview, Network, Hosts                         |
+| `⌘K`        | Search                                           |
+| `⌘,`        | Settings                                         |
+| `⌘F`        | Filter requests in Network                       |
+| `⌘I`        | Show or hide the inspector                       |
+| `↑` / `↓`   | Move through requests in Network                 |
+| `Enter`     | Open the selected request's response body        |
+| `Esc`       | Leave a body for Network, or clear the selection |
+| `⌘O` / `⌘S` | Open a HAR file / export the capture as HAR      |
+| `⌘R`        | Pause or resume recording                        |
+| `⌘⌫`        | Clear the capture                                |
 
 On Linux and Windows, `Ctrl` takes the place of `⌘`.
 
@@ -341,14 +351,6 @@ let proxy = Proxy::new(config);
 Wildcards follow TLS/X.509 semantics: `*.example.com` matches subdomains but
 not the apex, so list both patterns to cover both. Matching ignores case and
 any port, including on bracketed IPv6 literals such as `[::1]:8080`.
-
-## Documentation
-
-- [Proxy Architecture](docs/proxy-architecture.md) - internals, request flows, and module layout
-- [Certificate Installation](docs/certificate-installation.md) - trusting the CA on each platform
-- [Installing Mira](docs/installing.md) - the desktop app's installers, and their first-run warnings
-- [Releasing](docs/releasing.md) - building the installers and publishing a release
-- [Example Configuration](docs/config.example.toml) - annotated config file
 
 ## Development
 

@@ -28,12 +28,12 @@ warning the first time someone opens the app.
 
 What it costs instead:
 
-- **macOS** blocks the app the first time it is opened, until someone clicks *Open
-  Anyway* in System Settings. Every new version is blocked again. The ad-hoc signature is
+- **macOS** blocks the app the first time it is opened, until someone clicks _Open
+  Anyway_ in System Settings. Every new version is blocked again. The ad-hoc signature is
   free and changes nothing about that warning. What it prevents is worse: a Mac finding an
-  unsigned app in a download calls it *damaged*, with no button to open it anyway.
-- **Windows** SmartScreen shows *Windows protected your PC* when the installer is run, and
-  someone has to click *More info*, then *Run anyway*. The installed app does not warn
+  unsigned app in a download calls it _damaged_, with no button to open it anyway.
+- **Windows** SmartScreen shows _Windows protected your PC_ when the installer is run, and
+  someone has to click _More info_, then _Run anyway_. The installed app does not warn
   again.
 - **Nobody can tell your file from a tampered one.** A signature would prove a file came
   from you. The checksums are the substitute, and they only work if the list someone

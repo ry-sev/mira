@@ -101,13 +101,13 @@ intercept = false
 # Supports wildcards: *.example.com matches any subdomain, but not the
 # apex example.com — list both patterns to cover both
 passthrough_hosts = [
-    # Apple services (certificate pinning)
-    # "*.apple.com",
-    # "*.icloud.com",
+  # Apple services (certificate pinning)
+  # "*.apple.com",
+  # "*.icloud.com",
 
-    # Google services
-    # "*.google.com",
-    # "*.googleapis.com",
+  # Google services
+  # "*.google.com",
+  # "*.googleapis.com",
 ]
 
 # =============================================================================

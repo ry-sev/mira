@@ -34,14 +34,14 @@ Mira is built on Tokio's async runtime and uses a connection-per-task model. Eac
 
 Shared state wrapped in `Arc`, accessible by all connection handlers:
 
-| Field             | Type             | Purpose                                    |
-| ----------------- | ---------------- | ------------------------------------------ |
-| `config`          | `Config`         | Proxy settings (ports, timeouts, filters)  |
-| `request_counter` | `AtomicU64`      | Generates unique request IDs               |
-| `callbacks`       | `Callbacks`      | User-registered event handlers             |
-| `connection_pool` | `ConnectionPool` | HTTP/1.1 keep-alive connection reuse       |
-| `session`         | `Option<Session>`| Captured exchanges for export              |
-| `tls_config`      | `Option<TlsConfig>` | CA and cert cache for HTTPS interception |
+| Field             | Type                | Purpose                                   |
+| ----------------- | ------------------- | ----------------------------------------- |
+| `config`          | `Config`            | Proxy settings (ports, timeouts, filters) |
+| `request_counter` | `AtomicU64`         | Generates unique request IDs              |
+| `callbacks`       | `Callbacks`         | User-registered event handlers            |
+| `connection_pool` | `ConnectionPool`    | HTTP/1.1 keep-alive connection reuse      |
+| `session`         | `Option<Session>`   | Captured exchanges for export             |
+| `tls_config`      | `Option<TlsConfig>` | CA and cert cache for HTTPS interception  |
 
 ### Connection Handler
 
@@ -214,9 +214,9 @@ primitives the HTTP/1.1 path uses.
 The upstream leg is discovered on the first connection and shared by the
 whole session:
 
-| Origin speaks | Upstream leg                                                            |
-| ------------- | ----------------------------------------------------------------------- |
-| `h2`          | One multiplexed connection every stream sends on                        |
+| Origin speaks | Upstream leg                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `h2`          | One multiplexed connection every stream sends on                                                                           |
 | `http/1.1`    | Exclusive connections streams check out and return; idle ones are kept, up to `max_idle_upstreams_per_session` (default 4) |
 
 Details that differ from the HTTP/1.1 path:
@@ -311,10 +311,10 @@ The acceptor is built before the `200 Connection Established` is sent, so a
 certificate failure can still be answered with a real `502` rather than
 leaving the client in a half-TLS state. What it offers depends on the host:
 
-| Session                | Offered to the client | Offered to the origin |
-| ---------------------- | --------------------- | --------------------- |
-| Intercepted host       | `h2`, `http/1.1`      | Mirrors what the client negotiated |
-| `mira.proxy`           | `http/1.1` only       | n/a (served locally)  |
+| Session          | Offered to the client | Offered to the origin              |
+| ---------------- | --------------------- | ---------------------------------- |
+| Intercepted host | `h2`, `http/1.1`      | Mirrors what the client negotiated |
+| `mira.proxy`     | `http/1.1` only       | n/a (served locally)               |
 
 Acceptors are cached per host, keyed so that the two protocol offers cannot
 collide — the certificate is the same, the negotiated protocol is not. The
@@ -368,11 +368,11 @@ session (see above) for as long as the client's connection lives.
 
 ### Pool Operations
 
-| Operation | Description                                            |
-| --------- | ------------------------------------------------------ |
-| `get()`   | Retrieve an idle connection, or return None            |
-| `put()`   | Return a connection to the pool after use              |
-| cleanup   | Expired connections are removed on next `get()` call   |
+| Operation | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `get()`   | Retrieve an idle connection, or return None          |
+| `put()`   | Return a connection to the pool after use            |
+| cleanup   | Expired connections are removed on next `get()` call |
 
 ## Callback System
 
@@ -515,6 +515,7 @@ WebSocket upgrades are detected and tunneled:
 ```
 
 Key difference from HTTPS CONNECT:
+
 - WebSocket uses a regular HTTP request with upgrade headers (not CONNECT)
 - Proxy forwards the upgrade request and waits for 101 response
 - After 101 confirmation, switches to bidirectional tunneling
@@ -522,7 +523,7 @@ Key difference from HTTPS CONNECT:
 The same handling applies to `wss://` inside an intercepted TLS session: the
 upgrade is recognized there too, and once the origin answers `101` the
 decrypted streams are copied in both directions. An upgrade the origin
-*rejects* is not a tunnel — the whole response, body included, is forwarded
+_rejects_ is not a tunnel — the whole response, body included, is forwarded
 back to the client as an ordinary exchange.
 
 ## Magic Domain
@@ -531,11 +532,11 @@ Requests for `mira.proxy` are answered by the proxy itself rather than
 forwarded, so a client configured to use Mira can fetch the CA without any
 other network access:
 
-| Path               | Response                                    |
-| ------------------ | ------------------------------------------- |
-| `/`                | HTML page with per-platform trust instructions |
-| `/ca.crt`, `/ca.der` | CA certificate, DER                       |
-| `/ca.pem`          | CA certificate, PEM                         |
+| Path                 | Response                                       |
+| -------------------- | ---------------------------------------------- |
+| `/`                  | HTML page with per-platform trust instructions |
+| `/ca.crt`, `/ca.der` | CA certificate, DER                            |
+| `/ca.pem`            | CA certificate, PEM                            |
 
 It works over plain HTTP and over intercepted HTTPS. The HTTPS route only
 succeeds for a client that already trusts the CA, which is the expected
@@ -543,17 +544,17 @@ outcome for someone who is there to install it.
 
 ## Lifecycle and Limits
 
-| Bound                  | Effect                                                             |
-| ---------------------- | ------------------------------------------------------------------ |
-| `max_connections`      | Accept-loop semaphore; clients queue in the kernel instead of spawning tasks |
-| `max_header_size`      | A head that grows past this without terminating is rejected with `431` |
-| `max_body_size`        | Larger request bodies are rejected. Larger response bodies are relayed in full but captured only up to this size |
-| `connect_timeout`      | Upstream TCP connect, and the upstream TLS handshake               |
-| `read_timeout`         | Each upstream read, and the client TLS handshake on an intercepted `CONNECT` |
-| `write_timeout`        | Each write to an upstream or a client, so a peer that stops reading cannot hold its connection forever |
-| Decompressed bodies    | Capped at 128 MB (`MAX_DECOMPRESSED_SIZE`), so a compression bomb cannot exhaust memory |
-| Request-head deadline  | Total, not per-read, so a byte-drip client cannot reset the clock  |
-| `SessionLimits`        | Bounds retained exchanges and body bytes; oldest are evicted       |
+| Bound                 | Effect                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `max_connections`     | Accept-loop semaphore; clients queue in the kernel instead of spawning tasks                                     |
+| `max_header_size`     | A head that grows past this without terminating is rejected with `431`                                           |
+| `max_body_size`       | Larger request bodies are rejected. Larger response bodies are relayed in full but captured only up to this size |
+| `connect_timeout`     | Upstream TCP connect, and the upstream TLS handshake                                                             |
+| `read_timeout`        | Each upstream read, and the client TLS handshake on an intercepted `CONNECT`                                     |
+| `write_timeout`       | Each write to an upstream or a client, so a peer that stops reading cannot hold its connection forever           |
+| Decompressed bodies   | Capped at 128 MB (`MAX_DECOMPRESSED_SIZE`), so a compression bomb cannot exhaust memory                          |
+| Request-head deadline | Total, not per-read, so a byte-drip client cannot reset the clock                                                |
+| `SessionLimits`       | Bounds retained exchanges and body bytes; oldest are evicted                                                     |
 
 `Proxy::run_until(shutdown)` stops polling `accept()` when the shutdown
 future resolves, then waits a bounded grace period for in-flight handlers so
@@ -582,14 +583,14 @@ client yet, Mira answers for the origin and closes the connection. The body is
 a plain-text line giving the reason. The exchange is still recorded, with its
 error.
 
-| Status | When                                                                    |
-| ------ | ----------------------------------------------------------------------- |
-| `400`  | Malformed head, ambiguous framing, missing `Host`, or a bad port        |
-| `403`  | The host filter blocks the host                                         |
-| `413`  | The request body exceeds `max_body_size`                                |
-| `431`  | The head exceeds `max_header_size`, or has more than 128 header fields  |
+| Status | When                                                                                     |
+| ------ | ---------------------------------------------------------------------------------------- |
+| `400`  | Malformed head, ambiguous framing, missing `Host`, or a bad port                         |
+| `403`  | The host filter blocks the host                                                          |
+| `413`  | The request body exceeds `max_body_size`                                                 |
+| `431`  | The head exceeds `max_header_size`, or has more than 128 header fields                   |
 | `502`  | The origin could not be reached, its TLS handshake failed, or its response was malformed |
-| `504`  | Connecting to or hearing back from the origin timed out                 |
+| `504`  | Connecting to or hearing back from the origin timed out                                  |
 
 HTTP/2 streams get the same statuses, on the stream rather than the connection.
 
@@ -603,40 +604,40 @@ tunnel those bytes are the start of the TLS handshake.
 
 ### Request
 
-| Field         | Type                    | Description                          |
-| ------------- | ----------------------- | ------------------------------------ |
-| `id`          | `u64`                   | Unique identifier                    |
-| `client_addr` | `SocketAddr`            | Client's IP and port                 |
-| `method`      | `String`                | HTTP method (GET, POST, etc.)        |
-| `url`         | `Url`                   | Full URL including scheme            |
-| `version`     | `String`                | `HTTP/1.1`, `HTTP/2`, ...            |
-| `headers`     | `Vec<(String, String)>` | Request headers                      |
-| `body`        | `Bytes`                 | Request body bytes                   |
+| Field         | Type                    | Description                   |
+| ------------- | ----------------------- | ----------------------------- |
+| `id`          | `u64`                   | Unique identifier             |
+| `client_addr` | `SocketAddr`            | Client's IP and port          |
+| `method`      | `String`                | HTTP method (GET, POST, etc.) |
+| `url`         | `Url`                   | Full URL including scheme     |
+| `version`     | `String`                | `HTTP/1.1`, `HTTP/2`, ...     |
+| `headers`     | `Vec<(String, String)>` | Request headers               |
+| `body`        | `Bytes`                 | Request body bytes            |
 
 ### Response
 
-| Field              | Type                    | Description                          |
-| ------------------ | ----------------------- | ------------------------------------ |
-| `request_id`       | `u64`                   | Matches the request                  |
-| `status`           | `u16`                   | HTTP status code                     |
-| `reason`           | `String`                | Reason phrase (empty on HTTP/2)      |
-| `version`          | `String`                | `HTTP/1.1`, `HTTP/2`, ...            |
-| `headers`          | `Vec<(String, String)>` | Response headers                     |
-| `body`             | `Bytes`                 | Raw response body, as sent           |
-| `body_decompressed`| `Bytes`                 | Decoded body (same bytes if not encoded) |
-| `encoding`         | `Encoding`              | gzip, deflate, brotli, or none       |
-| `resource_type`    | `ResourceType`          | Inferred type (json, html, etc.)     |
-| `duration_ms`      | `u64`                   | Total time from request to last byte |
-| `timings`          | `Option<Timings>`       | Detailed timing breakdown            |
-| `remote_addr`      | `Option<SocketAddr>`    | Address the response came from       |
+| Field               | Type                    | Description                              |
+| ------------------- | ----------------------- | ---------------------------------------- |
+| `request_id`        | `u64`                   | Matches the request                      |
+| `status`            | `u16`                   | HTTP status code                         |
+| `reason`            | `String`                | Reason phrase (empty on HTTP/2)          |
+| `version`           | `String`                | `HTTP/1.1`, `HTTP/2`, ...                |
+| `headers`           | `Vec<(String, String)>` | Response headers                         |
+| `body`              | `Bytes`                 | Raw response body, as sent               |
+| `body_decompressed` | `Bytes`                 | Decoded body (same bytes if not encoded) |
+| `encoding`          | `Encoding`              | gzip, deflate, brotli, or none           |
+| `resource_type`     | `ResourceType`          | Inferred type (json, html, etc.)         |
+| `duration_ms`       | `u64`                   | Total time from request to last byte     |
+| `timings`           | `Option<Timings>`       | Detailed timing breakdown                |
+| `remote_addr`       | `Option<SocketAddr>`    | Address the response came from           |
 
 ### Exchange
 
-| Field      | Type               | Description                             |
-| ---------- | ------------------ | --------------------------------------- |
-| `request`  | `Request`          | The original request                    |
-| `response` | `Option<Response>` | The response (None if failed)           |
-| `error`    | `Option<String>`   | Error message if request failed         |
+| Field      | Type               | Description                     |
+| ---------- | ------------------ | ------------------------------- |
+| `request`  | `Request`          | The original request            |
+| `response` | `Option<Response>` | The response (None if failed)   |
+| `error`    | `Option<String>`   | Error message if request failed |
 
 ## Module Structure
 
