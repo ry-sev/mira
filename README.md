@@ -1,5 +1,12 @@
 # Mira
 
+<div align="center">
+
+[![Build status](https://github.com/ry-sev/mira/actions/workflows/build.yml/badge.svg)](https://github.com/ry-sev/mira/actions)
+[![GitHub Release](https://img.shields.io/github/v/release/ry-sev/mira)](https://github.com/ry-sev/mira/releases/latest)
+
+</div>
+
 A general-purpose HTTP/HTTPS proxy for inspecting, debugging, and monitoring web traffic.
 
 ![Screenshot](docs/screenshot.png)
