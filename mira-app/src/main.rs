@@ -8,6 +8,7 @@
 // Prevents an additional console window on Windows in release. Do not remove.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod about;
 mod body;
 mod capture;
 mod curl;
@@ -73,6 +74,7 @@ use workspace::FocusFilter;
 use workspace::FocusSearch;
 use workspace::OpenHar;
 use workspace::Quit;
+use workspace::ShowAbout;
 use workspace::ShowHosts;
 use workspace::ShowLogs;
 use workspace::ShowNetwork;
@@ -129,6 +131,7 @@ fn main() {
         cx.set_global(Main {
             shared: shared.clone(),
             window: None,
+            about: None,
         });
         if show_window(cx).is_none() {
             cx.quit();
@@ -146,6 +149,9 @@ fn main() {
                 .is_some_and(|(window, _)| window.window_id() == closed)
             {
                 main.window = None;
+            }
+            if main.about.is_some_and(|about| about.window_id() == closed) {
+                main.about = None;
             }
         })
         .detach();
@@ -259,6 +265,9 @@ fn bind_keys(cx: &mut App) {
 struct Main {
     shared: Shared,
     window: Option<(AnyWindowHandle, Entity<Workspace>)>,
+
+    /// The About window, while it is open.
+    about: Option<AnyWindowHandle>,
 }
 
 impl Global for Main {}
@@ -285,6 +294,23 @@ fn show_window(cx: &mut App) -> Option<(AnyWindowHandle, Entity<Workspace>)> {
     }
 }
 
+/// The About window, brought to the front, or opened if it is closed.
+fn show_about(cx: &mut App) {
+    let Some(main) = cx.try_global::<Main>() else {
+        return;
+    };
+    if let Some(about) = main.about {
+        let _ = about.update(cx, |_, window, _| window.activate_window());
+        return;
+    }
+    match gpui_kit::open_window(about::window_options(cx), cx, |_, cx| {
+        cx.new(|_| about::About)
+    }) {
+        Ok((about, _)) => cx.global_mut::<Main>().about = Some(about),
+        Err(err) => tracing::error!(error = %err, "could not open the About window"),
+    }
+}
+
 /// Run every window command on the workspace, wherever focus is, opening the
 /// window first if it is closed.
 ///
@@ -296,11 +322,20 @@ fn register_actions(cx: &mut App) {
         Some(dir) if dir.exists() => cx.open_with_system(&dir),
         _ => tracing::warn!("there is no log folder to show"),
     });
+    cx.on_action(|_: &ShowAbout, cx| cx.defer(show_about));
     cx.on_action(|_: &CloseWindow, cx| {
         // Deferred, as below: the window cannot close itself mid-dispatch.
         cx.defer(|cx| {
-            let open = cx.try_global::<Main>().and_then(|main| main.window.clone());
-            if let Some((window, _)) = open {
+            // The About window, when it is in front; otherwise the main one.
+            let about = cx.try_global::<Main>().and_then(|main| main.about);
+            let active = cx.active_window();
+            let open = match about {
+                Some(about) if active == Some(about) => Some(about),
+                _ => cx
+                    .try_global::<Main>()
+                    .and_then(|main| main.window.as_ref().map(|(window, _)| *window)),
+            };
+            if let Some(window) = open {
                 let _ = window.update(cx, |_, window, _| window.remove_window());
             }
         });
@@ -351,6 +386,8 @@ fn register_actions(cx: &mut App) {
 fn menus() -> Vec<Menu> {
     vec![
         Menu::new("Mira").items([
+            MenuItem::action("About Mira", ShowAbout),
+            MenuItem::separator(),
             MenuItem::action("Settings…", ShowSettings),
             MenuItem::separator(),
             MenuItem::os_submenu("Services", SystemMenuType::Services),
