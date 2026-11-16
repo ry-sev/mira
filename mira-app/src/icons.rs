@@ -219,11 +219,19 @@ pub fn icon(name: Icon, size: Rems) -> Svg {
         .text_color(crate::theme::colors().ink_2)
 }
 
+/// The asset path of the app icon, for the About window.
+pub const APP_ICON: &str = "app/icon.png";
+
 /// Everything the window loads by path.
 pub struct Assets;
 
 impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<Cow<'static, [u8]>>> {
+        if path == APP_ICON {
+            return Ok(Some(Cow::Borrowed(include_bytes!(
+                "../icons/128x128@2x.png"
+            ))));
+        }
         Ok(Icon::from_path(path).map(|icon| Cow::Owned(icon.document().into_bytes())))
     }
 
@@ -231,6 +239,7 @@ impl AssetSource for Assets {
         Ok(Icon::ALL
             .into_iter()
             .map(Icon::path)
+            .chain([SharedString::from(APP_ICON)])
             .filter(|asset| asset.starts_with(path))
             .collect())
     }
@@ -251,6 +260,18 @@ mod tests {
             let text = String::from_utf8(bytes.into_owned()).expect("utf-8");
             assert!(text.starts_with("<svg"), "{icon:?}");
         }
+    }
+
+    #[test]
+    fn test_the_app_icon_is_served() {
+        let bytes = Assets.load(APP_ICON).expect("loads").expect("is served");
+        assert!(bytes.starts_with(b"\x89PNG"));
+        assert!(
+            Assets
+                .list("app/")
+                .expect("lists")
+                .contains(&APP_ICON.into())
+        );
     }
 
     #[test]

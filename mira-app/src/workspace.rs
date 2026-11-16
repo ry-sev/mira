@@ -52,6 +52,11 @@ pub const CONTEXT: &str = "Workspace";
 #[action(namespace = mira)]
 pub struct Quit;
 
+/// Opens the About window.
+#[derive(Clone, Debug, Default, Eq, PartialEq, gpui_kit::Action)]
+#[action(namespace = mira)]
+pub struct ShowAbout;
+
 /// Closes the window, leaving the app and the proxy running on macOS.
 #[derive(Clone, Debug, Default, Eq, PartialEq, gpui_kit::Action)]
 #[action(namespace = mira)]
