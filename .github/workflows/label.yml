@@ -1,8 +1,9 @@
 name: Label
 
 # Labels a new pull request from its branch prefix, so the release notes sort it into the
-# right section (see .github/release.yml). A branch whose prefix has no section, such as
-# chore/ or refactor/, gets no label and lands under Other changes.
+# right section (see .github/release.yml). A release/ branch's label keeps its version bump
+# out of the notes. A branch whose prefix has no section, such as chore/ or refactor/, gets
+# no label and lands under Other changes.
 #
 # pull_request_target, so that pull requests from forks are labelled too. It runs with
 # write access, so it MUST NOT check out or run the pull request's code. The branch name
@@ -34,6 +35,7 @@ jobs:
             feature/*) label=enhancement ;;
             bugfix/* | hotfix/*) label=bug ;;
             docs/*) label=documentation ;;
+            release/*) label=release ;;
             *) echo "no label for $BRANCH"; exit 0 ;;
           esac
           gh api --method POST "repos/$REPO/issues/$NUMBER/labels" -f "labels[]=$label"

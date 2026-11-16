@@ -121,16 +121,17 @@ reviewed much faster than a large one that mixes unrelated changes.
 
 Branch names MUST start with a prefix that says what the branch does:
 
-| Prefix      | Use for                                     |
-| ----------- | ------------------------------------------- |
-| `feature/`  | New functionality                           |
-| `bugfix/`   | Fixes for non-urgent bugs                   |
-| `hotfix/`   | Urgent fixes for released code              |
-| `refactor/` | Code restructuring with no behavior change  |
-| `docs/`     | Documentation only                          |
-| `chore/`    | Tooling, dependencies, CI, and other upkeep |
+| Prefix      | Use for                                          |
+| ----------- | ------------------------------------------------ |
+| `feature/`  | New functionality                                |
+| `bugfix/`   | Fixes for non-urgent bugs                        |
+| `hotfix/`   | Urgent fixes for released code                   |
+| `refactor/` | Code restructuring with no behavior change       |
+| `docs/`     | Documentation only                               |
+| `chore/`    | Tooling, dependencies, CI, and other upkeep      |
+| `release/`  | The version bump for a release, and nothing else |
 
-Example: `feature/websocket-inspection`, `bugfix/tls-handshake-timeout`.
+Example: `feature/websocket-inspection`, `bugfix/tls-handshake-timeout`, `release/v0.2.0`.
 
 ### Merging
 
