@@ -63,24 +63,31 @@ replaced.
 
 ## Cutting a release
 
-1. Set `version` under `[workspace.package]` in the root `Cargo.toml`, and run
-   `cargo update --workspace` so `Cargo.lock` follows. cargo-packager reads the app's
-   version from there; there is no second copy to keep in step.
-2. Commit, then tag and push:
+1. On a branch named `release/vX.Y.Z`, set `version` under `[workspace.package]` in the
+   root `Cargo.toml`, and run `cargo update --workspace` so `Cargo.lock` follows.
+   cargo-packager reads the app's version from there; there is no second copy to keep in
+   step.
+2. Commit, push, and open a pull request. CI builds it with `--locked`, which catches a
+   `Cargo.lock` left behind. The branch prefix labels it `release`, which keeps it out of
+   the notes.
+3. Once it is merged, tag `main` and push the tag:
 
    ```bash
+   git switch main
+   git pull --ff-only
    git tag vX.Y.Z
    git push origin vX.Y.Z
    ```
 
-3. When the workflow finishes, open the draft under **Releases**, edit the notes as you
+4. When the workflow finishes, open the draft under **Releases**, edit the notes as you
    like, keeping the checksum block, and **Publish**.
 
 The draft lists the pull requests merged since the last tag, sorted by label as
 `.github/release.yml` says: `enhancement` under Features, `bug` under Fixes,
 `documentation` under Documentation, and the rest under Other changes. A new pull request
 is labelled from its branch prefix by `.github/workflows/label.yml`: `feature/` gets
-`enhancement`, `bugfix/` and `hotfix/` get `bug`, and `docs/` gets `documentation`.
+`enhancement`, `bugfix/` and `hotfix/` get `bug`, `docs/` gets `documentation`, and
+`release/` gets `release`, which the notes leave out.
 Change a label before tagging to move a pull request; relabelling later needs a re-run of
 the workflow.
 
