@@ -76,6 +76,14 @@ replaced.
 3. When the workflow finishes, open the draft under **Releases**, edit the notes as you
    like, keeping the checksum block, and **Publish**.
 
+The draft lists the pull requests merged since the last tag, sorted by label as
+`.github/release.yml` says: `enhancement` under Features, `bug` under Fixes,
+`documentation` under Documentation, and the rest under Other changes. A new pull request
+is labelled from its branch prefix by `.github/workflows/label.yml`: `feature/` gets
+`enhancement`, `bugfix/` and `hotfix/` get `bug`, and `docs/` gets `documentation`.
+Change a label before tagging to move a pull request; relabelling later needs a re-run of
+the workflow.
+
 ## Sharing a release
 
 A public repository's releases are open to anyone. Also paste the contents of
