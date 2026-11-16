@@ -3,7 +3,7 @@ resolver = "3"
 members = ["mira-app", "mira-cli", "mira-proxy"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 description = "HTTP/HTTPS proxy for inspecting and monitoring web traffic."
 authors = ["Ricky Severino"]
 edition = "2024"
